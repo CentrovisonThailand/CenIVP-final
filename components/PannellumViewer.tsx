@@ -14,7 +14,7 @@ export default function PannellumViewer() {
       .then(data => setViews(data.views))
       .catch(err => console.error("Error fetching views:", err));
 
-    // 2. โหลด Pannellum Scripts & CSS ถ้ายังไม่มีในหน้าเว็บ
+    // 2. โหลด Pannellum Scripts & CSS
     if (!document.getElementById('pannellum-script')) {
       const script = document.createElement('script');
       script.id = 'pannellum-script';
@@ -34,30 +34,31 @@ export default function PannellumViewer() {
     }
 
     function initViewer() {
-      // ล้าง Viewer เก่าทิ้งเพื่อคืน RAM (ป้องกันจอดำ)
+      // ล้างหน่วยความจำเก่าทิ้งก่อน (สำคัญมากสำหรับ iPad/มือถือ)
       if (viewerRef.current) {
         viewerRef.current.destroy();
       }
 
-      // ตรวจสอบว่าเป็นมือถือหรือไม่
-      const isMobile = window.innerWidth <= 768;
+      // เช็คว่าเป็นมือถือหรือแท็บเล็ต (iPad) หรือไม่ 
+      // ปรับเป็น 1180 เพื่อให้ iPad โหลดรูปเล็กด้วย จะได้ไม่จอดำ
+      const isMobileOrTablet = window.innerWidth <= 1180;
       
-      // เลือก Path รูปภาพให้ตรงกับชื่อไฟล์ใน GitHub (เช็คตัวพิมพ์ใหญ่-เล็กให้เป๊ะ)
-      const selectedPanorama = isMobile 
-        ? '/image/Executive-Double-Final-4096x2048.jpg'  // รูป 4K สำหรับมือถือ
-        : '/image/Executive-Double-Final.jpg';           // รูปต้นฉบับสำหรับคอม
+      // เลือกใช้รูปตามขนาดหน้าจอ (สะกดชื่อไฟล์ให้ตรงกับใน GitHub เป๊ะๆ)
+      const selectedPanorama = isMobileOrTablet 
+        ? '/image/Executive-Double-Final-4096x2048.jpg' // รูป 4K (สำหรับมือถือ/iPad)
+        : '/image/Executive-Double-Final.jpg';          // รูป 16K (สำหรับคอมพิวเตอร์)
 
       viewerRef.current = window.pannellum.viewer('panorama-container', {
         type: 'equirectangular',
         panorama: selectedPanorama,
         autoLoad: true,
         autoRotate: -2,
-        orientationOnDeviceMotion: true, // เปิดระบบ Gyroscope สำหรับมือถือ
+        orientationOnDeviceMotion: true, // เอียงเครื่องหมุนตาม (สำหรับมือถือ/iPad)
         backgroundColor: [0.1, 0.1, 0.1],
       });
     }
 
-    // Cleanup เมื่อออกจากหน้าเว็บ
+    // ทำลาย viewer เมื่อออกจากหน้าเว็บเพื่อคืนค่า RAM
     return () => {
       if (viewerRef.current) {
         viewerRef.current.destroy();
@@ -69,7 +70,7 @@ export default function PannellumViewer() {
     <div className="relative w-full h-screen overflow-hidden">
       <div id="panorama-container" className="w-full h-full bg-slate-900" />
       
-      {/* UI Analytics */}
+      {/* ส่วนแสดงยอดวิว */}
       <div className="absolute top-8 right-8 z-10 bg-black/40 backdrop-blur-xl p-6 rounded-2xl border border-white/20 text-white shadow-2xl">
         <div className="flex flex-col items-end">
           <span className="text-[10px] uppercase tracking-[0.3em] text-cyan-400 font-bold mb-1">Live Analytics</span>
@@ -82,7 +83,7 @@ export default function PannellumViewer() {
         </div>
       </div>
 
-      {/* Logo & Branding */}
+      {/* โลโก้ CenIVP */}
       <div className="absolute bottom-8 right-8 z-10">
         <img 
           src="/image/cenivp.png" 
