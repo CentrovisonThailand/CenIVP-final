@@ -14,7 +14,7 @@ export default function PannellumViewer() {
       .then(data => setViews(data.views))
       .catch(err => console.error("Error fetching views:", err));
 
-    // 2. โหลด Pannellum Scripts & CSS
+    // 2. โหลด Pannellum Scripts & CSS ถ้ายังไม่มีในหน้าเว็บ
     if (!document.getElementById('pannellum-script')) {
       const script = document.createElement('script');
       script.id = 'pannellum-script';
@@ -39,24 +39,25 @@ export default function PannellumViewer() {
         viewerRef.current.destroy();
       }
 
-      // --- ส่วนที่รวม Logic เลือกรูปภาพ ---
+      // ตรวจสอบว่าเป็นมือถือหรือไม่
       const isMobile = window.innerWidth <= 768;
       
+      // เลือก Path รูปภาพให้ตรงกับชื่อไฟล์ใน GitHub (เช็คตัวพิมพ์ใหญ่-เล็กให้เป๊ะ)
       const selectedPanorama = isMobile 
-        ? '/image/Executive-Double-Final-4096x2048.jpg'    // รูปที่ Resize (4096px) สำหรับมือถือ
-        : '/image/Executive-Double-Final.jpg'; // รูปต้นฉบับ (16K) สำหรับคอม
+        ? '/image/Executive-Double-Final-4096x2048.jpg'  // รูป 4K สำหรับมือถือ
+        : '/image/Executive-Double-Final.jpg';           // รูปต้นฉบับสำหรับคอม
 
       viewerRef.current = window.pannellum.viewer('panorama-container', {
         type: 'equirectangular',
         panorama: selectedPanorama,
         autoLoad: true,
         autoRotate: -2,
-        orientationOnDeviceMotion: true, // เอียงมือถือเพื่อดูภาพได้
+        orientationOnDeviceMotion: true, // เปิดระบบ Gyroscope สำหรับมือถือ
         backgroundColor: [0.1, 0.1, 0.1],
       });
     }
 
-    // Cleanup เมื่อปิดหน้าเว็บ
+    // Cleanup เมื่อออกจากหน้าเว็บ
     return () => {
       if (viewerRef.current) {
         viewerRef.current.destroy();
